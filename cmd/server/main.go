@@ -1,3 +1,8 @@
+// @title URL Shortener API
+// @version 1.0
+// @description Simple API for shortening URLs.
+// @host localhost:8080
+// @BasePath /
 package main
 
 import (
@@ -5,11 +10,16 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	"url-shortener/internal/db"
 	"url-shortener/internal/handler"
 	"url-shortener/pkg/logger"
 
+	_ "url-shortener/docs"
+
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
@@ -35,14 +45,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health-check", handler.HealthCheckHandler)
-	mux.HandleFunc("/urls", handler.CreateShortURLHandler)
-	mux.HandleFunc("/", handler.RedirectHandler)
+	r := chi.NewRouter()
+
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
+	r.Get("/health-check", handler.HealthCheckHandler)
+	r.Route("/urls", func(r chi.Router) {
+		r.Post("/", handler.CreateShortURLHandler)
+		r.Delete("/", handler.DeleteShortURLHandler)
+		r.Get("/{id}", handler.GetShortURLHandler)
+	})
+	r.Get("/{slug}", handler.RedirectHandler)
 
 	port := ":" + os.Getenv("APP_PORT")
 	logger.Info("Listening on %s", port)
-	if err := http.ListenAndServe(port, mux); err != nil {
+	if err := http.ListenAndServe(port, r); err != nil {
 		logger.Error("Server error: %v", err)
 	}
 }

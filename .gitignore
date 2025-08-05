@@ -63,6 +63,16 @@ Thumbs.db
 # Atlas migration files (keep schema but ignore generated files)
 atlas.sum
 
+# Generated documentation
+/docs/build/
+/docs/dist/
+*.html
+*.pdf
+
+# But keep source documentation
+!/docs/
+!/docs/**/*.md
+
 # Local development
 .air.toml
 hot-reload

@@ -1,72 +1,80 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
-	"url-shortener/internal/db"
-	"url-shortener/pkg/logger"
+	"url-shortener/internal/services"
+
+	"github.com/go-chi/chi/v5"
 )
 
-type createShortURLRequest struct {
-	OriginalURL string `json:"original_url"`
-}
-type createShortURLResponse struct {
-	ID       string `json:"id"`
-	ShortURL string `json:"short_url"`
-}
-
+// HealthCheckHandler godoc
+// @Summary Check if the server is running
+// @Tags Health Check
+// @Description Returns a simple message indicating the server is up and running
+// @Accept json
+// @Produce text/plain
+// @Success 200 {string} string "Server is up and running!"
+// @Router /health-check [get]
 func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Server is up and running!")
 }
 
-func CreateShortURLHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var req createShortURLRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Bad Request: Invalid JSON", http.StatusBadRequest)
-		return
-	}
-
-	if req.OriginalURL == "" {
-		http.Error(w, "Bad Request: original_url is required", http.StatusBadRequest)
-		return
-	}
-
-	id, slug, err := db.SaveURL(req.OriginalURL)
-	if err != nil {
-		logger.Error("Failed to save URL: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	shortURL := os.Getenv("APP_HOST") + "/" + slug
-	logger.Info("Succesfully generated shortURL: %v", shortURL)
-
-	res := createShortURLResponse{ID: id, ShortURL: shortURL}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+// GetShortURLHandler godoc
+// @Summary Get a shortened URL
+// @Tags URL Management
+// @Description Gets a shortened URL by ID
+// @Accept json
+// @Produce json
+// @Param id path string true "Short URL ID"
+// @Success 200 {object} services.GetShortURLResponse
+// @Failure 404 {object} map[string]string
+// @Router /urls/{id} [get]
+func GetShortURLHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	services.GetShortURL(w, r, id)
 }
 
+// CreateShortURLHandler godoc
+// @Summary Shorten a URL
+// @Tags URL Management
+// @Description Generates a shortened URL
+// @Accept json
+// @Produce json
+// @Param request body services.CreateShortURLRequest true "Original URL"
+// @Success 200 {object} services.CreateShortURLResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /urls [post]
+func CreateShortURLHandler(w http.ResponseWriter, r *http.Request) {
+	services.CreateShortURL(w, r)
+}
+
+// DeleteShortURLHandler godoc
+// @Summary Delete a shortened URL
+// @Tags URL Management
+// @Description Deletes a shortened URL by ID
+// @Accept json
+// @Produce json
+// @Param request body services.DeleteShortURLRequest true "URL ID"
+// @Success 200 {object} services.DeleteShortURLResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /urls [delete]
+func DeleteShortURLHandler(w http.ResponseWriter, r *http.Request) {
+	services.DeleteShortURL(w, r)
+}
+
+// RedirectHandler godoc
+// @Summary Redirect to original URL
+// @Tags URL Redirect Route
+// @Description Redirects to the original URL by slug
+// @Accept json
+// @Produce json
+// @Param slug path string true "Slug"
+// @Success 302 {string} string "Redirects to original URL"
+// @Failure 404 {object} map[string]string
+// @Router /{slug} [get]
 func RedirectHandler(w http.ResponseWriter, r *http.Request) {
-	slug := strings.TrimPrefix(r.URL.Path, "/")
-	if slug == "" {
-		http.NotFound(w, r)
-		return
-	}
-
-	originalURL, err := db.GetOriginalURL(slug)
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	}
-
-	logger.Info("Redirecting to %s", originalURL)
-	http.Redirect(w, r, originalURL, http.StatusFound)
+	services.RedirectURL(w, r)
 }

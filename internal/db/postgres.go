@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"math/big"
+	"url-shortener/internal/model"
 
 	"github.com/lib/pq"
 )
@@ -41,6 +42,12 @@ func generateSlug() (string, error) {
 	return string(b), nil
 }
 
+func GetURL(id string) (model.URL, error) {
+	var url model.URL
+	err := DB.QueryRow("SELECT id, original_url, short_slug, created_at FROM urls WHERE id = $1", id).Scan(&url.ID, &url.OriginalURL, &url.ShortSlug, &url.CreatedAt)
+	return url, err
+}
+
 func SaveURL(originalURL string) (string, string, error) {
 	for i := 0; i < maxRetries; i++ {
 		slug, err := generateSlug()
@@ -66,4 +73,9 @@ func SaveURL(originalURL string) (string, string, error) {
 	}
 
 	return "", "", errors.New("failed to generate unique slug after multiple retries")
+}
+
+func DeleteURL(id string) error {
+	_, err := DB.Exec("DELETE FROM urls WHERE id = $1", id)
+	return err
 }

@@ -1,0 +1,179 @@
+basePath: /
+definitions:
+  services.CreateShortURLRequest:
+    properties:
+      original_url:
+        type: string
+    type: object
+  services.CreateShortURLResponse:
+    properties:
+      id:
+        type: string
+      short_url:
+        type: string
+    type: object
+  services.DeleteShortURLRequest:
+    properties:
+      id:
+        type: string
+    type: object
+  services.DeleteShortURLResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  services.GetShortURLResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      original_url:
+        type: string
+      short_url:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Simple API for shortening URLs.
+  title: URL Shortener API
+  version: "1.0"
+paths:
+  /{slug}:
+    get:
+      consumes:
+      - application/json
+      description: Redirects to the original URL by slug
+      parameters:
+      - description: Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirects to original URL
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Redirect to original URL
+      tags:
+      - Redirect Route
+  /health-check:
+    get:
+      consumes:
+      - application/json
+      description: Returns a simple message indicating the server is up and running
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Server is up and running!
+          schema:
+            type: string
+      summary: Check if the server is running
+      tags:
+      - Health Check
+  /urls:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a shortened URL by ID
+      parameters:
+      - description: URL ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/services.DeleteShortURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.DeleteShortURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a shortened URL
+      tags:
+      - URL Management
+    post:
+      consumes:
+      - application/json
+      description: Generates a shortened URL
+      parameters:
+      - description: Original URL
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/services.CreateShortURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.CreateShortURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Shorten a URL
+      tags:
+      - URL Management
+  /urls/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Gets a shortened URL by ID
+      parameters:
+      - description: Short URL ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.GetShortURLResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a shortened URL
+      tags:
+      - URL Management
+swagger: "2.0"
