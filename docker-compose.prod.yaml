@@ -2,8 +2,6 @@ services:
   postgres:
     container_name: url-shortener-postgres
     image: "postgres:latest"
-    ports:
-      - "5433:5432"
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data/
@@ -12,10 +10,11 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "pg_isready -h localhost -U postgres"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 40s
 
   app:
     image: ghcr.io/larsniet/url-shortener-api:main
@@ -26,13 +25,12 @@ services:
       - APP_PORT=8080
       - APP_HOST=http://localhost:8080
       - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5433
+      - POSTGRES_PORT=5432
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
     healthcheck:
       test:
         ["CMD-SHELL", "curl -f http://localhost:8080/health-check || exit 1"]
