@@ -1,0 +1,13 @@
+[build]
+  cmd = "go build -o bin/server/main cmd/server/main.go"
+  bin = "bin/server/main"
+  dir = "."
+  include_ext = ["go"]
+  exclude_dir = ["vendor", "bin", "db-data", "tmp"]
+  include_dir = ["cmd", "pkg", "internal", "docs"]
+
+[log]
+  level = "debug"
+
+[misc]
+  clean_on_exit = true

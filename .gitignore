@@ -71,5 +71,4 @@ Thumbs.db
 !/docs/**/*.md
 
 # Local development
-.air.toml
 hot-reload
