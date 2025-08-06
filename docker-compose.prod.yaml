@@ -1,7 +1,7 @@
 services:
   postgres:
     container_name: url-shortener-postgres
-    image: "postgres:latest"
+    image: "postgres:15-alpine"
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data/
