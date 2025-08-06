@@ -60,9 +60,6 @@ Thumbs.db
 # Docker
 .dockerignore
 
-# Atlas migration files (keep schema but ignore generated files)
-atlas.sum
-
 # Generated documentation
 /docs/build/
 /docs/dist/

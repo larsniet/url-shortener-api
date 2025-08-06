@@ -18,7 +18,7 @@
 | **Raw SQL**            | No ORM, use `database/sql` | Simple, idiomatic, testable, avoids abstraction overhead |
 | **Repository Pattern** | Interface for data access  | Enables testability (mocking), decouples service & DB    |
 | **Slug Generation**    | In service layer           | Business logic stays out of DB layer                     |
-| **Migrations**         | Atlas (with `atlas.hcl`)   | Versioned schema, repeatable deployments                 |
+| **Migrations**         | Goose                      | Automatic migrations, no manual work needed              |
 
 ---
 

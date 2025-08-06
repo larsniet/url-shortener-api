@@ -1,3 +1,4 @@
+-- +goose Up
 -- Create "urls" table
 CREATE TABLE "public"."urls" (
   "id" uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -9,3 +10,8 @@ CREATE TABLE "public"."urls" (
 
 -- Create index "short_slug_unique" to table: "urls"
 CREATE UNIQUE INDEX "short_slug_unique" ON "public"."urls" ("short_slug");
+
+-- +goose Down
+-- Drop the table and index
+DROP INDEX IF EXISTS "short_slug_unique";
+DROP TABLE IF EXISTS "public"."urls";
