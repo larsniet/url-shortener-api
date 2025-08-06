@@ -15,8 +15,10 @@ RUN go mod download && go mod verify
 # Copy source code
 COPY . .
 
-# Build the application with optimized flags
-RUN CGO_ENABLED=0 GOOS=linux go build \
+# Build the application with optimized flags and caching
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=linux go build \
     -ldflags='-w -s -extldflags "-static"' \
     -o main cmd/server/main.go
 
