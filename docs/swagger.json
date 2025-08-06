@@ -52,7 +52,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/services.CreateShortURLRequest"
+                            "$ref": "#/definitions/url.CreateShortURLRequest"
                         }
                     }
                 ],
@@ -60,7 +60,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/services.CreateShortURLResponse"
+                            "$ref": "#/definitions/url.CreateShortURLResponse"
                         }
                     },
                     "400": {
@@ -102,7 +102,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/services.DeleteShortURLRequest"
+                            "$ref": "#/definitions/url.DeleteShortURLRequest"
                         }
                     }
                 ],
@@ -110,7 +110,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/services.DeleteShortURLResponse"
+                            "$ref": "#/definitions/url.DeleteShortURLResponse"
                         }
                     },
                     "400": {
@@ -160,7 +160,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/services.GetShortURLResponse"
+                            "$ref": "#/definitions/url.GetShortURLResponse"
                         }
                     },
                     "404": {
@@ -185,7 +185,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Redirect Route"
+                    "URL Redirect Route"
                 ],
                 "summary": "Redirect to original URL",
                 "parameters": [
@@ -218,7 +218,7 @@
         }
     },
     "definitions": {
-        "services.CreateShortURLRequest": {
+        "url.CreateShortURLRequest": {
             "type": "object",
             "properties": {
                 "original_url": {
@@ -226,7 +226,7 @@
                 }
             }
         },
-        "services.CreateShortURLResponse": {
+        "url.CreateShortURLResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -237,7 +237,7 @@
                 }
             }
         },
-        "services.DeleteShortURLRequest": {
+        "url.DeleteShortURLRequest": {
             "type": "object",
             "properties": {
                 "id": {
@@ -245,7 +245,7 @@
                 }
             }
         },
-        "services.DeleteShortURLResponse": {
+        "url.DeleteShortURLResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -253,7 +253,7 @@
                 }
             }
         },
-        "services.GetShortURLResponse": {
+        "url.GetShortURLResponse": {
             "type": "object",
             "properties": {
                 "created_at": {

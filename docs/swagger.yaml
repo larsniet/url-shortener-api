@@ -1,28 +1,28 @@
 basePath: /
 definitions:
-  services.CreateShortURLRequest:
+  url.CreateShortURLRequest:
     properties:
       original_url:
         type: string
     type: object
-  services.CreateShortURLResponse:
+  url.CreateShortURLResponse:
     properties:
       id:
         type: string
       short_url:
         type: string
     type: object
-  services.DeleteShortURLRequest:
+  url.DeleteShortURLRequest:
     properties:
       id:
         type: string
     type: object
-  services.DeleteShortURLResponse:
+  url.DeleteShortURLResponse:
     properties:
       message:
         type: string
     type: object
-  services.GetShortURLResponse:
+  url.GetShortURLResponse:
     properties:
       created_at:
         type: string
@@ -66,7 +66,7 @@ paths:
             type: object
       summary: Redirect to original URL
       tags:
-      - Redirect Route
+      - URL Redirect Route
   /health-check:
     get:
       consumes:
@@ -93,14 +93,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.DeleteShortURLRequest'
+          $ref: '#/definitions/url.DeleteShortURLRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/services.DeleteShortURLResponse'
+            $ref: '#/definitions/url.DeleteShortURLResponse'
         "400":
           description: Bad Request
           schema:
@@ -126,14 +126,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/services.CreateShortURLRequest'
+          $ref: '#/definitions/url.CreateShortURLRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/services.CreateShortURLResponse'
+            $ref: '#/definitions/url.CreateShortURLResponse'
         "400":
           description: Bad Request
           schema:
@@ -166,7 +166,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/services.GetShortURLResponse'
+            $ref: '#/definitions/url.GetShortURLResponse'
         "404":
           description: Not Found
           schema:

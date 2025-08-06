@@ -12,7 +12,8 @@ import (
 	"os"
 
 	"url-shortener/internal/db"
-	"url-shortener/internal/handler"
+	"url-shortener/internal/health"
+	"url-shortener/internal/url"
 	"url-shortener/pkg/logger"
 
 	_ "url-shortener/docs"
@@ -45,16 +46,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	urlRepo := url.NewPostgresRepository(db.GetDB())
+	urlService := url.NewService(urlRepo)
+	urlHandler := url.NewHandler(urlService)
+
 	r := chi.NewRouter()
 
 	r.Get("/swagger/*", httpSwagger.WrapHandler)
-	r.Get("/health-check", handler.HealthCheckHandler)
+	r.Get("/health-check", health.HealthCheckHandler)
 	r.Route("/urls", func(r chi.Router) {
-		r.Post("/", handler.CreateShortURLHandler)
-		r.Delete("/", handler.DeleteShortURLHandler)
-		r.Get("/{id}", handler.GetShortURLHandler)
+		r.Post("/", urlHandler.CreateShortURLHandler)
+		r.Delete("/", urlHandler.DeleteShortURLHandler)
+		r.Get("/{id}", urlHandler.GetShortURLHandler)
 	})
-	r.Get("/{slug}", handler.RedirectHandler)
+	r.Get("/{slug}", urlHandler.RedirectHandler)
 
 	port := ":" + os.Getenv("APP_PORT")
 	logger.Info("Listening on %s", port)

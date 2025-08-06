@@ -1,23 +1,18 @@
-package handler
+package url
 
 import (
-	"fmt"
 	"net/http"
-	"url-shortener/internal/services"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 )
 
-// HealthCheckHandler godoc
-// @Summary Check if the server is running
-// @Tags Health Check
-// @Description Returns a simple message indicating the server is up and running
-// @Accept json
-// @Produce text/plain
-// @Success 200 {string} string "Server is up and running!"
-// @Router /health-check [get]
-func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Server is up and running!")
+type Handler struct {
+	service *Service
+}
+
+func NewHandler(service *Service) *Handler {
+	return &Handler{service: service}
 }
 
 // GetShortURLHandler godoc
@@ -27,12 +22,12 @@ func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Short URL ID"
-// @Success 200 {object} services.GetShortURLResponse
+// @Success 200 {object} GetShortURLResponse
 // @Failure 404 {object} map[string]string
 // @Router /urls/{id} [get]
-func GetShortURLHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	services.GetShortURL(w, r, id)
+	h.service.GetShortURL(w, r, id)
 }
 
 // CreateShortURLHandler godoc
@@ -41,13 +36,13 @@ func GetShortURLHandler(w http.ResponseWriter, r *http.Request) {
 // @Description Generates a shortened URL
 // @Accept json
 // @Produce json
-// @Param request body services.CreateShortURLRequest true "Original URL"
-// @Success 200 {object} services.CreateShortURLResponse
+// @Param request body CreateShortURLRequest true "Original URL"
+// @Success 200 {object} CreateShortURLResponse
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /urls [post]
-func CreateShortURLHandler(w http.ResponseWriter, r *http.Request) {
-	services.CreateShortURL(w, r)
+func (h *Handler) CreateShortURLHandler(w http.ResponseWriter, r *http.Request) {
+	h.service.CreateShortURL(w, r)
 }
 
 // DeleteShortURLHandler godoc
@@ -56,13 +51,13 @@ func CreateShortURLHandler(w http.ResponseWriter, r *http.Request) {
 // @Description Deletes a shortened URL by ID
 // @Accept json
 // @Produce json
-// @Param request body services.DeleteShortURLRequest true "URL ID"
-// @Success 200 {object} services.DeleteShortURLResponse
+// @Param request body DeleteShortURLRequest true "URL ID"
+// @Success 200 {object} DeleteShortURLResponse
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /urls [delete]
-func DeleteShortURLHandler(w http.ResponseWriter, r *http.Request) {
-	services.DeleteShortURL(w, r)
+func (h *Handler) DeleteShortURLHandler(w http.ResponseWriter, r *http.Request) {
+	h.service.DeleteShortURL(w, r)
 }
 
 // RedirectHandler godoc
@@ -75,6 +70,7 @@ func DeleteShortURLHandler(w http.ResponseWriter, r *http.Request) {
 // @Success 302 {string} string "Redirects to original URL"
 // @Failure 404 {object} map[string]string
 // @Router /{slug} [get]
-func RedirectHandler(w http.ResponseWriter, r *http.Request) {
-	services.RedirectURL(w, r)
+func (h *Handler) RedirectHandler(w http.ResponseWriter, r *http.Request) {
+	slug := strings.TrimPrefix(r.URL.Path, "/")
+	h.service.RedirectURL(w, r, slug)
 }

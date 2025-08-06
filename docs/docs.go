@@ -58,7 +58,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/services.CreateShortURLRequest"
+                            "$ref": "#/definitions/url.CreateShortURLRequest"
                         }
                     }
                 ],
@@ -66,7 +66,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/services.CreateShortURLResponse"
+                            "$ref": "#/definitions/url.CreateShortURLResponse"
                         }
                     },
                     "400": {
@@ -108,7 +108,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/services.DeleteShortURLRequest"
+                            "$ref": "#/definitions/url.DeleteShortURLRequest"
                         }
                     }
                 ],
@@ -116,7 +116,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/services.DeleteShortURLResponse"
+                            "$ref": "#/definitions/url.DeleteShortURLResponse"
                         }
                     },
                     "400": {
@@ -166,7 +166,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/services.GetShortURLResponse"
+                            "$ref": "#/definitions/url.GetShortURLResponse"
                         }
                     },
                     "404": {
@@ -191,7 +191,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Redirect Route"
+                    "URL Redirect Route"
                 ],
                 "summary": "Redirect to original URL",
                 "parameters": [
@@ -224,7 +224,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "services.CreateShortURLRequest": {
+        "url.CreateShortURLRequest": {
             "type": "object",
             "properties": {
                 "original_url": {
@@ -232,7 +232,7 @@ const docTemplate = `{
                 }
             }
         },
-        "services.CreateShortURLResponse": {
+        "url.CreateShortURLResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -243,7 +243,7 @@ const docTemplate = `{
                 }
             }
         },
-        "services.DeleteShortURLRequest": {
+        "url.DeleteShortURLRequest": {
             "type": "object",
             "properties": {
                 "id": {
@@ -251,7 +251,7 @@ const docTemplate = `{
                 }
             }
         },
-        "services.DeleteShortURLResponse": {
+        "url.DeleteShortURLResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -259,7 +259,7 @@ const docTemplate = `{
                 }
             }
         },
-        "services.GetShortURLResponse": {
+        "url.GetShortURLResponse": {
             "type": "object",
             "properties": {
                 "created_at": {

@@ -1,13 +1,20 @@
-package services
+package url
 
 import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"url-shortener/internal/db"
 	"url-shortener/pkg/logger"
 	"url-shortener/pkg/utils"
 )
+
+type Service struct {
+	repo Repository
+}
+
+func NewService(repo Repository) *Service {
+	return &Service{repo: repo}
+}
 
 type GetShortURLResponse struct {
 	ID          string `json:"id"`
@@ -33,8 +40,8 @@ type DeleteShortURLResponse struct {
 	Message string `json:"message"`
 }
 
-func GetShortURL(w http.ResponseWriter, r *http.Request, id string) {
-	url, err := db.GetURL(id)
+func (s *Service) GetShortURL(w http.ResponseWriter, r *http.Request, id string) {
+	url, err := s.repo.GetByID(id)
 	if err != nil {
 		logger.Error("Failed to get URL: %v", err)
 		utils.WriteError(w, http.StatusInternalServerError, "Failed to get URL")
@@ -52,7 +59,7 @@ func GetShortURL(w http.ResponseWriter, r *http.Request, id string) {
 	logger.Info("Successfully got URL: %s", url.ID)
 }
 
-func CreateShortURL(w http.ResponseWriter, r *http.Request) {
+func (s *Service) CreateShortURL(w http.ResponseWriter, r *http.Request) {
 	var req CreateShortURLRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, "Invalid JSON")
@@ -64,7 +71,7 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, slug, err := db.SaveURL(req.OriginalURL)
+	id, slug, err := s.repo.Save(req.OriginalURL)
 	if err != nil {
 		logger.Error("Failed to save URL: %v", err)
 		utils.WriteError(w, http.StatusInternalServerError, "Failed to save URL")
@@ -78,14 +85,14 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, res)
 }
 
-func DeleteShortURL(w http.ResponseWriter, r *http.Request) {
+func (s *Service) DeleteShortURL(w http.ResponseWriter, r *http.Request) {
 	var req DeleteShortURLRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, "Invalid JSON")
 		return
 	}
 
-	err := db.DeleteURL(req.ID)
+	err := s.repo.Delete(req.ID)
 	if err != nil {
 		logger.Error("Failed to delete URL: %v", err)
 		utils.WriteError(w, http.StatusInternalServerError, "Failed to delete URL")
@@ -94,4 +101,20 @@ func DeleteShortURL(w http.ResponseWriter, r *http.Request) {
 
 	utils.WriteJSON(w, http.StatusOK, DeleteShortURLResponse{Message: "URL deleted successfully"})
 	logger.Info("URL deleted successfully: %s", req.ID)
+}
+
+func (s *Service) RedirectURL(w http.ResponseWriter, r *http.Request, slug string) {
+	if slug == "" {
+		http.NotFound(w, r)
+		return
+	}
+
+	originalURL, err := s.repo.GetBySlug(slug)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	logger.Info("Redirecting to %s", originalURL)
+	http.Redirect(w, r, originalURL, http.StatusFound)
 }

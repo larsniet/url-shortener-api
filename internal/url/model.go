@@ -1,4 +1,4 @@
-package model
+package url
 
 type URL struct {
 	ID          string
