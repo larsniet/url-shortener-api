@@ -1,172 +1,85 @@
-# URL Shortener Service
+# URL Shortener
 
-A high-performance URL shortening service built with Go, PostgreSQL, and Docker.
+## 🏗️ Architecture Overview
 
-## Features
+| Component               | Choice                              | Why?                                                                  |
+| ----------------------- | ----------------------------------- | --------------------------------------------------------------------- |
+| **Folder Structure**    | `cmd/`, `internal/`, `pkg/`         | Follows Go standards (`cmd/` for entry, `internal/` for private code) |
+| **Domain-Based Layout** | `internal/url/`, `internal/health/` | Groups logic by feature, not by technical layer                       |
+| **Layered Design**      | Handler → Service → Repository      | Separates HTTP, business logic, and data access cleanly               |
 
-- 🔗 Shorten long URLs with custom short codes
-- 📊 Click tracking and analytics
-- 🐳 Docker containerized deployment
-- 🚀 High-performance Go backend
-- 📦 PostgreSQL database with migrations
-- 🔄 Automated CI/CD with GitHub Actions
+---
 
-## Quick Start
+## 💾 Database Handling
 
-### Prerequisites
+| Component              | Choice                     | Why?                                                     |
+| ---------------------- | -------------------------- | -------------------------------------------------------- |
+| **Database Driver**    | `lib/pq` or `pgx`          | Standard, reliable PostgreSQL drivers                    |
+| **Raw SQL**            | No ORM, use `database/sql` | Simple, idiomatic, testable, avoids abstraction overhead |
+| **Repository Pattern** | Interface for data access  | Enables testability (mocking), decouples service & DB    |
+| **Slug Generation**    | In service layer           | Business logic stays out of DB layer                     |
+| **Migrations**         | Atlas (with `atlas.hcl`)   | Versioned schema, repeatable deployments                 |
 
-- Docker and Docker Compose
-- Go 1.21+ (for local development)
+---
 
-### Running with Docker
+## 🛠️ Key Technologies
 
-```bash
-# Start the services
-docker-compose up -d
+| Tool/Library        | Purpose                   | Why Chosen?                             |
+| ------------------- | ------------------------- | --------------------------------------- |
+| **Chi Router**      | HTTP routing              | Lightweight, idiomatic Go router        |
+| **Swagger/OpenAPI** | API documentation         | Clear, interactive API docs             |
+| **Docker**          | Containerization          | Consistent local and prod environments  |
+| **GitHub Actions**  | CI/CD pipeline            | Automated builds, tests, multi-platform |
+| **Air**             | Hot reload in development | Speeds up development                   |
 
-# The API will be available at http://localhost:8080
-```
+---
 
-### Local Development
+## ⚙️ Design Patterns
 
-```bash
-# Install dependencies
-go mod download
+| Pattern                  | Purpose                           | Why?                                    |
+| ------------------------ | --------------------------------- | --------------------------------------- |
+| **Dependency Injection** | Inject repo into service          | Decoupling, testability                 |
+| **Repository Interface** | Abstract data storage             | Swappable DB, easier unit testing       |
+| **Environment Config**   | `.env` + 12-Factor app principles | Flexible, environment-specific settings |
+| **Multi-stage Docker**   | Separate build/runtime containers | Smaller, more secure production images  |
 
-# Start PostgreSQL
-docker-compose up -d postgres
+---
 
-# Run migrations
-atlas migrate apply --env local --allow-dirty
+## 🧪 Testing Strategy
 
-# Start the server with hot reloading
-docker-compose up app
-```
+| Layer      | Test Type                   | Why?                               |
+| ---------- | --------------------------- | ---------------------------------- |
+| Repository | Mock DB or integration      | Validate SQL and data handling     |
+| Service    | Pure logic unit tests       | Ensures business rules are correct |
+| Handler    | HTTP request/response tests | Ensures correct API behavior       |
 
-## API Documentation
+---
 
-### Create Short URL
-```bash
-POST /api/v1/urls
-Content-Type: application/json
+## 🌐 API Design
 
-{
-  "url": "https://example.com/very-long-url",
-  "custom_code": "optional-custom-code"
-}
-```
+| Principle              | Why?                                         |
+| ---------------------- | -------------------------------------------- |
+| **RESTful Routes**     | Standard, predictable API usage              |
+| **OpenAPI Spec**       | Auto-generated docs, easy for clients to use |
+| **Health Check Route** | Enables observability, uptime monitoring     |
 
-### Redirect to Original URL
-```bash
-GET /{short_code}
-# Redirects to original URL
-```
+---
 
-### Get URL Analytics
-```bash
-GET /api/v1/urls/{short_code}/stats
-# Returns click count and analytics
-```
+## 🚢 Deployment Strategy
 
-## Project Structure
+| Choice                    | Why?                                             |
+| ------------------------- | ------------------------------------------------ |
+| **Docker Compose**        | Dev environment management                       |
+| **GHCR + GitHub Actions** | Automated builds/releases, secure image registry |
+| **Environment Variables** | Clean config, no hardcoded secrets               |
 
-```
-.
-├── cmd/
-│   └── server/          # Application entrypoints
-├── internal/
-│   ├── handler/         # HTTP handlers
-│   ├── model/          # Data models
-│   ├── services/       # Business logic
-│   └── db/             # Database layer & migrations
-├── pkg/
-│   ├── logger/         # Shared utilities
-│   └── utils/          # Helper functions
-├── .github/workflows/  # CI/CD pipelines
-├── docker-compose.yaml # Development environment
-├── Dockerfile          # Development container
-└── Dockerfile.prod     # Production container
-```
+---
 
-## Database Migrations
+## 📊 Summary
 
-We use [Atlas](https://atlasgo.io/) for database migrations:
+This architecture balances **simplicity**, **testability**, and **scalability** by:
 
-```bash
-# Apply migrations
-atlas migrate apply --env local --allow-dirty
-
-# Create new migrations (after updating schema.hcl)
-atlas migrate diff migration_name --env local
-
-# Check migration status
-atlas migrate status --env local --allow-dirty
-```
-
-## Testing
-
-```bash
-# Run tests
-go test ./...
-
-# Run tests with coverage
-go test -cover ./...
-```
-
-## Deployment
-
-### Docker Production
-
-```bash
-# Build production image
-docker build -f Dockerfile.prod -t url-shortener .
-
-# Run with environment variables
-docker run -p 8080:8080 \
-  -e DATABASE_URL=postgres://... \
-  url-shortener
-```
-
-### GitHub Container Registry
-
-Images are automatically built and published to GitHub Container Registry on:
-- Every push to `main` branch
-- Git tags (semantic versioning)
-- Pull requests (for testing)
-
-```bash
-# Pull the latest image
-docker pull ghcr.io/OWNER/url-shortener:main
-
-# Pull a specific version
-docker pull ghcr.io/OWNER/url-shortener:v1.0.0
-```
-
-### CI/CD Pipeline
-
-The GitHub Actions workflow automatically:
-1. ✅ Runs tests
-2. 🏗️ Builds Docker image with multi-stage build
-3. 🐳 Pushes to GitHub Container Registry (GHCR)
-4. 🔒 Creates build provenance attestation
-5. 🌐 Supports multi-platform builds (amd64, arm64)
-
-## Environment Variables
-
-| Variable       | Description                              | Default  |
-| -------------- | ---------------------------------------- | -------- |
-| `PORT`         | Server port                              | `8080`   |
-| `DATABASE_URL` | PostgreSQL connection string             | Required |
-| `LOG_LEVEL`    | Logging level (debug, info, warn, error) | `info`   |
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- Following **Go idioms** and **standard folder structures**
+- Keeping logic **modular and decoupled**
+- Using **raw SQL** with PostgreSQL for **maximum control and performance**
+- Leveraging **containers** and **CI/CD** for seamless deployment
